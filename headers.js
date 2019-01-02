@@ -45,8 +45,10 @@ function getCurrentURL(callback, postData, addressDiv){ //Take a callback
 }
 
 function _displayTab(tab){ //define your callback function
+    if(tab[0].url){
       var my_url = tab[0].url;
       return my_url;
+    }
 }
 
 function displayOutput(addressDiv, formatted_output){ //define your callback function
@@ -105,12 +107,19 @@ function async_formatURL(postData, addressDiv) {
 function handleEvent(details) {
     var addressDiv = $('div.address[id="req-' + details.requestId + '"]');
     if (addressDiv.length === 0) {
+      // avoid running through all this if no bids in request
+      var bids = details.url.match(/hb_pb_.*?%3D(\d*\.?\d+)/g);
+      if (bids) {
         addressDiv = $('<div>').addClass("address").attr("id", "req-" + details.requestId);
         $("#container").append(addressDiv);
-
-        async_formatURL(details.url, addressDiv).then(function(result){
-        displayOutput(result[1], result[0]);
-        });
+        if(details.url){        
+          async_formatURL(details.url, addressDiv).then(function(result){
+            if(result){
+              displayOutput(result[1], result[0]);
+            }
+          });
+        }
+      }
     }
 }
 
