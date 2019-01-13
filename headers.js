@@ -58,7 +58,6 @@ function displayOutput(addressDiv, formatted_output, json_text, json_data){ //de
   $('<div>').addClass("url").text(formatted_output).appendTo(addressDiv);
   // add to a json object
   json_data = json_data['pageview'].push(json_text)
-  console.log(json_data);
 }
 
 function formatURL(postData, my_url, addressDiv) {
@@ -96,7 +95,10 @@ function formatURL(postData, my_url, addressDiv) {
       json_text = "{_ts:" + Date.now().toString() + "," + "url:" + my_url + "," + text + '}';
       json_text = json_text.replace(/([.\/\-a\.-zA-Z 0-9-]+):([.\/\-?&_=\+a-zA-Z 0-9-a-zA-Z0-9-]+)/g, "\"$1\":\"$2\"");
       json_text = json_text.replace(/( )/g, '');
+<<<<<<< HEAD
+=======
       console.log(json_text);
+>>>>>>> 27e6ed23005eccb3d6c3d65284b91f76bf23a713
       json_text = JSON.parse(json_text);
       text = "url: " + my_url + "," + text;
       resolve([text, addressDiv, json_text]);
