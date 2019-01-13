@@ -12,9 +12,14 @@ TODO
 - find a simpler way of doing this in general. I'm brand new to writing async code
 */
 
-
+var starttime = Date.now().toString();
 var tabId = parseInt(window.location.search.substring(1));
 var filters = { urls: ["<all_urls>"], tabId: tabId };
+var json_data = JSON.parse('{"pageview": []}');
+
+// not workig yet. todo: pass data to this before appending to container. make accessible from popup's html link.
+var obj = {a: 123, b: "4 5 6"};
+var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(obj));
 
 function addListeners() {
     chrome.webRequest.onBeforeRequest.addListener(handleEvent, filters, ['requestBody']);
@@ -25,7 +30,6 @@ function removeListeners() {
 }
 
 function myFunction(tablink) {
-  // do stuff here
   return tablink;
 }
 
@@ -33,7 +37,6 @@ function getCurrentURL(callback, postData, addressDiv){ //Take a callback
     var theTab;
     var queryInfo = {
         active: true,
-        //currentWindow: false
         lastFocusedWindow: true
       };
     return new Promise(function(resolve, reject) {
@@ -44,15 +47,18 @@ function getCurrentURL(callback, postData, addressDiv){ //Take a callback
     });
 }
 
-function _displayTab(tab){ //define your callback function
+function _displayTab(tab){
     if(tab[0].url){
       var my_url = tab[0].url;
       return my_url;
     }
 }
 
-function displayOutput(addressDiv, formatted_output){ //define your callback function
+function displayOutput(addressDiv, formatted_output, json_text, json_data){ //define your callback function
   $('<div>').addClass("url").text(formatted_output).appendTo(addressDiv);
+  // add to a json object
+  json_data = json_data['pageview'].push(json_text)
+  console.log(json_data);
 }
 
 function formatURL(postData, my_url, addressDiv) {
@@ -86,8 +92,14 @@ function formatURL(postData, my_url, addressDiv) {
         text = price_text;
         text = text.replace(',', ', ');
       }
-      text = Date.now().toString() + "," + my_url + ", " + text;
-      resolve([text, addressDiv]);
+      my_url = my_url.replace(':','');
+      json_text = "{_ts:" + Date.now().toString() + "," + "url:" + my_url + "," + text + '}';
+      json_text = json_text.replace(/([.\/\-a\.-zA-Z 0-9-]+):([.\/\-?&_=\+a-zA-Z 0-9-a-zA-Z0-9-]+)/g, "\"$1\":\"$2\"");
+      json_text = json_text.replace(/( )/g, '');
+      console.log(json_text);
+      json_text = JSON.parse(json_text);
+      text = "url: " + my_url + "," + text;
+      resolve([text, addressDiv, json_text]);
     })
   }
 }
@@ -115,7 +127,7 @@ function handleEvent(details) {
         if(details.url){        
           async_formatURL(details.url, addressDiv).then(function(result){
             if(result){
-              displayOutput(result[1], result[0]);
+              displayOutput(result[1], result[0], result[2], json_data);
             }
           });
         }
@@ -125,5 +137,19 @@ function handleEvent(details) {
 
 $(function() {
     addListeners();
+    $('button#download').click(downloadData);
 });
+
+function downloadData() {
+  var element = document.createElement('a');
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(json_data)));
+  var filename = 'bids' + starttime + '_' + Date.now().toString() + '.json';
+  element.setAttribute('download', filename);
+  element.style.display = 'none';
+  document.body.appendChild(element);
+  element.click();
+  document.body.removeChild(element);
+}
+
+
 
