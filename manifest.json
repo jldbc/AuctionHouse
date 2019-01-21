@@ -1,10 +1,12 @@
 {
   "name": "AuctionHouse",
   "description": "How much is your attention worth to advertisers?",
-  "version": "0.21",
+  "version": "0.22",
   "author": "James LeDoux",
   "permissions": [
     "activeTab",
+    "webRequest",
+    "<all_urls>"
   ],
   "background": {
     "scripts": ["background.js"]
